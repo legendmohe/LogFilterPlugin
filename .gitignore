@@ -5,4 +5,5 @@
 /conf/
 /bin/
 /out/
+/build
 .gradle

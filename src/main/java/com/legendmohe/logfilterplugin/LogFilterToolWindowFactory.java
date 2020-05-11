@@ -34,6 +34,11 @@ public class LogFilterToolWindowFactory implements ToolWindowFactory {
             }
 
             @Override
+            public boolean enableFloatingWindow() {
+                return false;
+            }
+
+            @Override
             public void onViewPortChanged(LogFilterComponent logFilterComponent, ChangeEvent e) {
 
             }

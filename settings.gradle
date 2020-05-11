@@ -1,2 +1,5 @@
 rootProject.name = 'LogFilterPlugin'
 
+include ':submodules:LogFilter'
+project(':submodules:LogFilter').projectDir = new File('submodules/LogFilter')
+

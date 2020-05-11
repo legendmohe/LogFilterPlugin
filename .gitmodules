@@ -1,0 +1,3 @@
+[submodule "submodules/LogFilter"]
+	path = submodules/LogFilter
+	url = https://github.com/legendmohe/LogFilter
