@@ -1,0 +1,20 @@
+<idea-plugin>
+    <id>com.legendmohe.logfilterplugin.LogFilterPlugin</id>
+    <name>LogFilter</name>
+    <vendor email="legendmohe@foxmail.com" url="http://legendmohe.com">legendmohe</vendor>
+
+    <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="LogFilter"
+            icon="AllIcons.General.Filter"
+            anchor="bottom"
+            factoryClass="com.legendmohe.logfilterplugin.LogFilterToolWindowFactory"/>
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+    </actions>
+</idea-plugin>

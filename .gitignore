@@ -1,0 +1,8 @@
+*.ini
+*.class
+.idea
+*.txt
+/conf/
+/bin/
+/out/
+.gradle
