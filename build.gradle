@@ -20,6 +20,8 @@ intellij {
     version '182.2371.4'
 }
 patchPluginXml {
+    sinceBuild '182.2371.4'
+    untilBuild '201.*'
     changeNotes """
       android log viewer"""
 }
