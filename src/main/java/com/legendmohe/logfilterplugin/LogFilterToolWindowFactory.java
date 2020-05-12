@@ -1,5 +1,7 @@
 package com.legendmohe.logfilterplugin;
 
+import com.intellij.openapi.application.ApplicationAdapter;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -19,15 +21,33 @@ import javax.swing.event.ChangeEvent;
 
 public class LogFilterToolWindowFactory implements ToolWindowFactory {
 
+    private Content content;
+    private LogFilterComponent filterComponent;
+
+    public LogFilterToolWindowFactory() {
+        ApplicationManager.getApplication().addApplicationListener(new ApplicationAdapter() {
+            @Override
+            public void applicationExiting() {
+                if (filterComponent != null) {
+                    filterComponent.exit();
+                }
+            }
+        });
+    }
+
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-        Content content = contentFactory.createContent(createLogFilterComponent(), "", true);
+
+        if (content != null) {
+            toolWindow.getContentManager().removeContent(content, true);
+        }
+        content = contentFactory.createContent(createLogFilterComponent(project, toolWindow), "", true);
         toolWindow.getContentManager().addContent(content);
     }
 
-    private JComponent createLogFilterComponent() {
-        return new LogFilterComponent(new LogFilterFrame.FrameInfoProvider() {
+    private JComponent createLogFilterComponent(Project project, ToolWindow toolWindow) {
+        filterComponent = new LogFilterComponent(new LogFilterFrame.FrameInfoProvider() {
             @Override
             public JFrame getContainerFrame() {
                 return null;
@@ -45,7 +65,7 @@ public class LogFilterToolWindowFactory implements ToolWindowFactory {
 
             @Override
             public void setTabTitle(LogFilterComponent filterComponent, String strTitle, String tips) {
-
+                toolWindow.setTitle(strTitle);
             }
 
             @Override
@@ -63,5 +83,7 @@ public class LogFilterToolWindowFactory implements ToolWindowFactory {
 
             }
         });
+        toolWindow.show(filterComponent::restoreSplitPane);
+        return filterComponent;
     }
 }
