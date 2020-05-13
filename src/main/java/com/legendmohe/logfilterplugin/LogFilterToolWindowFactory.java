@@ -14,9 +14,9 @@ import com.legendmohe.tool.LogFilterFrame;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.Component;
+import java.awt.Frame;
 
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.event.ChangeEvent;
 
 public class LogFilterToolWindowFactory implements ToolWindowFactory {
@@ -49,7 +49,7 @@ public class LogFilterToolWindowFactory implements ToolWindowFactory {
     private JComponent createLogFilterComponent(Project project, ToolWindow toolWindow) {
         filterComponent = new LogFilterComponent(new LogFilterFrame.FrameInfoProvider() {
             @Override
-            public JFrame getContainerFrame() {
+            public Frame getContainerFrame() {
                 return null;
             }
 
