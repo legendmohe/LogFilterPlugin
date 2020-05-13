@@ -1,35 +1,45 @@
 package com.legendmohe.logfilterplugin;
 
-import com.intellij.openapi.application.ApplicationAdapter;
+import com.intellij.ide.AppLifecycleListener;
+import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import com.legendmohe.tool.FloatingFrameInfo;
 import com.legendmohe.tool.LogFilterComponent;
 import com.legendmohe.tool.LogFilterFrame;
+import com.legendmohe.tool.annotation.UIStateSaver;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.Component;
-import java.awt.Frame;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.Map;
 
 import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
 
 public class LogFilterToolWindowFactory implements ToolWindowFactory {
 
+    public static final String PROP_KEY = "log_filter_state";
+
     private Content content;
-    private LogFilterComponent filterComponent;
 
     public LogFilterToolWindowFactory() {
-        ApplicationManager.getApplication().addApplicationListener(new ApplicationAdapter() {
+        final Application app = ApplicationManager.getApplication();
+        app.getMessageBus().connect(app).subscribe(AppLifecycleListener.TOPIC, new AppLifecycleListener() {
             @Override
-            public void applicationExiting() {
-                if (filterComponent != null) {
-                    filterComponent.exit();
+            public void appWillBeClosed(boolean isRestart) {
+                if (content != null) {
+                    ((LogFilterComponent) content.getComponent()).exit();
                 }
             }
         });
@@ -47,43 +57,63 @@ public class LogFilterToolWindowFactory implements ToolWindowFactory {
     }
 
     private JComponent createLogFilterComponent(Project project, ToolWindow toolWindow) {
-        filterComponent = new LogFilterComponent(new LogFilterFrame.FrameInfoProvider() {
-            @Override
-            public Frame getContainerFrame() {
-                return null;
-            }
-
-            @Override
-            public boolean enableFloatingWindow() {
-                return false;
-            }
-
-            @Override
-            public void onViewPortChanged(LogFilterComponent logFilterComponent, ChangeEvent e) {
-
-            }
+        LogFilterComponent filterComponent = new LogFilterComponent(new LogFilterFrame.FrameInfoProviderAdapter() {
 
             @Override
             public void setTabTitle(LogFilterComponent filterComponent, String strTitle, String tips) {
                 toolWindow.setTitle(strTitle);
             }
-
+        }, new UIStateSaver.PersistenceHelper() {
             @Override
-            public boolean isFrameFocused() {
-                return false;
+            public Map<String, Serializable> deserialize() {
+                String value = PropertiesComponent.getInstance().getValue(PROP_KEY, "");
+                if (value.length() > 0) {
+                    try {
+                        Object deserialize = LogFilterToolWindowFactory.deserialize(value);
+                        return (Map<String, Serializable>) deserialize;
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+                return Collections.emptyMap();
             }
 
             @Override
-            public FloatingFrameInfo onFilterFloating(LogFilterComponent filter, Component component, String title) {
-                return null;
-            }
-
-            @Override
-            public void beforeLogFileParse(String filename, LogFilterComponent filterComponent) {
-
+            public void serialize(Map<String, Serializable> data) {
+                try {
+                    PropertiesComponent.getInstance().setValue(
+                            PROP_KEY, LogFilterToolWindowFactory.serialize((Serializable) data)
+                    );
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
         toolWindow.show(filterComponent::restoreSplitPane);
         return filterComponent;
+    }
+
+    /**
+     * Read the object from Base64 string.
+     */
+    private static Object deserialize(String s) throws IOException,
+            ClassNotFoundException {
+        byte[] data = Base64.getDecoder().decode(s);
+        ObjectInputStream ois = new ObjectInputStream(
+                new ByteArrayInputStream(data));
+        Object o = ois.readObject();
+        ois.close();
+        return o;
+    }
+
+    /**
+     * Write the object to a Base64 string.
+     */
+    private static String serialize(Serializable o) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeObject(o);
+        oos.close();
+        return Base64.getEncoder().encodeToString(baos.toByteArray());
     }
 }
