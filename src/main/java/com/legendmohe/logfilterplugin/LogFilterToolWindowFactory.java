@@ -60,6 +60,16 @@ public class LogFilterToolWindowFactory implements ToolWindowFactory {
         LogFilterComponent filterComponent = new LogFilterComponent(new LogFilterFrame.FrameInfoProviderAdapter() {
 
             @Override
+            public String getProjectRootPath() {
+                return project.getBasePath();
+            }
+
+            @Override
+            public boolean enableLogFlow() {
+                return false;
+            }
+
+            @Override
             public void setTabTitle(LogFilterComponent filterComponent, String strTitle, String tips) {
                 toolWindow.setTitle(strTitle);
             }
