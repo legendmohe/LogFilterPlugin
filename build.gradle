@@ -17,11 +17,11 @@ dependencies {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version '182.2371.4'
+    version '2020.2'
 }
 patchPluginXml {
-    sinceBuild '182.2371.4'
-    untilBuild '201.*'
+    sinceBuild '182.*'
+    untilBuild '203.*'
     changeNotes """
       android log viewer"""
 }
